@@ -1,6 +1,7 @@
 package com.user888mk.pokemonreview.api.security;
 
 
+import com.user888mk.pokemonreview.api.security.jwt.JWTAuthEntryPoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,20 +19,26 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final CustomUserDetailsService customUserDetailsService;
+    private CustomUserDetailsService customUserDetailsService;
+    private JWTAuthEntryPoint jwtAuthEntryPoint;
 
     @Autowired
-    public SecurityConfig(CustomUserDetailsService customUserDetailsService) {
+    public SecurityConfig(CustomUserDetailsService customUserDetailsService, JWTAuthEntryPoint jwtAuthEntryPoint) {
         this.customUserDetailsService = customUserDetailsService;
+        this.jwtAuthEntryPoint = jwtAuthEntryPoint;
     }
+
+    @Autowired
+
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeRequests().
-                requestMatchers("/api/auth/**").permitAll()
+                .exceptionHandling(h -> h.authenticationEntryPoint(jwtAuthEntryPoint))
+                .sessionManagement(i -> i.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeRequests()
+                .requestMatchers("/api/auth/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .httpBasic();
