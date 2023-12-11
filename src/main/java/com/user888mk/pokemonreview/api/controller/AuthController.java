@@ -1,11 +1,13 @@
 package com.user888mk.pokemonreview.api.controller;
 
+import com.user888mk.pokemonreview.api.dto.AuthResponseDTO;
 import com.user888mk.pokemonreview.api.dto.LoginDto;
 import com.user888mk.pokemonreview.api.dto.RegisterDto;
 import com.user888mk.pokemonreview.api.models.Role;
 import com.user888mk.pokemonreview.api.models.UserEntity;
 import com.user888mk.pokemonreview.api.repository.RoleRepository;
 import com.user888mk.pokemonreview.api.repository.UserRepository;
+import com.user888mk.pokemonreview.api.security.jwt.JWTGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,14 +31,16 @@ public class AuthController {
     private UserRepository userRepository;
     private RoleRepository roleRepository;
     private PasswordEncoder passwordEncoder;
+    private JWTGenerator jwtGenerator;
 
     @Autowired
     public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository,
-                          RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+                          RoleRepository roleRepository, PasswordEncoder passwordEncoder, JWTGenerator jwtGenerator) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtGenerator = jwtGenerator;
     }
 
     @PostMapping("/register")
@@ -55,10 +59,11 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginDto loginDto) {
+    public ResponseEntity<AuthResponseDTO> login(@RequestBody LoginDto loginDto) {
         Authentication authentication = authenticationManager.authenticate
                 (new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        return new ResponseEntity<>("User signed success", HttpStatus.OK);
+        String token = jwtGenerator.generateToken(authentication);
+        return new ResponseEntity<>(new AuthResponseDTO(token), HttpStatus.OK);
     }
 }

@@ -2,6 +2,7 @@ package com.user888mk.pokemonreview.api.security;
 
 
 import com.user888mk.pokemonreview.api.security.jwt.JWTAuthEntryPoint;
+import com.user888mk.pokemonreview.api.security.jwt.JWTAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,11 +15,11 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
     private CustomUserDetailsService customUserDetailsService;
     private JWTAuthEntryPoint jwtAuthEntryPoint;
 
@@ -27,9 +28,6 @@ public class SecurityConfig {
         this.customUserDetailsService = customUserDetailsService;
         this.jwtAuthEntryPoint = jwtAuthEntryPoint;
     }
-
-    @Autowired
-
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -43,6 +41,7 @@ public class SecurityConfig {
                 .and()
                 .httpBasic();
 
+        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
@@ -55,6 +54,11 @@ public class SecurityConfig {
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public JWTAuthenticationFilter jwtAuthenticationFilter() {
+        return new JWTAuthenticationFilter();
     }
 
 }
