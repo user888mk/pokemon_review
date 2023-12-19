@@ -61,9 +61,7 @@ public class PokemonServiceImpl implements PokemonService {
         pokemonResponse.setTotalPages(allPokemons.getTotalPages());
         pokemonResponse.setLast(allPokemons.isLast());
 
-
         return pokemonResponse;
-
     }
 
     @Override
@@ -85,7 +83,6 @@ public class PokemonServiceImpl implements PokemonService {
         pokemonRepository.save(pokemon);
 
         return mapEntityToDto(pokemon);
-
     }
 
     @Override
